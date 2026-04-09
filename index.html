@@ -214,7 +214,11 @@ tr:hover td{background:var(--cream);}
 .settings-section{background:#fff;border-radius:var(--r2);padding:24px;margin-bottom:18px;box-shadow:var(--shadow);}
 .settings-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:5px;color:var(--navy);}
 .settings-sub{font-size:12px;color:var(--muted);margin-bottom:20px;}
-  /* ── EMPTY STATE ───────────────────────────────── */
+.field-pill{display:inline-flex;align-items:center;gap:8px;background:var(--cream);border:1.5px solid var(--cream2);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:500;margin:4px;}
+.field-pill .del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0;}
+.field-pill .del:hover{color:var(--red);}
+
+/* ── EMPTY STATE ───────────────────────────────── */
 .empty{text-align:center;padding:50px 20px;color:var(--muted);}
 .empty-icon{font-size:40px;margin-bottom:12px;}
 .empty-title{font-family:'Syne',sans-serif;font-size:18px;color:var(--navy);margin-bottom:5px;}
@@ -265,7 +269,7 @@ input[type="checkbox"]{width:15px;height:15px;padding:0;cursor:pointer;accent-co
 <div id="login-screen">
   <div class="login-box">
     <div class="login-logo">
-      <img id="login-logo-img" src="data:image/webp;base64,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" alt="Q" style="width:48px;height:48px;object-fit:contain;border-radius:8px;background:#fff;padding:2px;">
+      <img id="login-logo-img" src="" alt="Q">
       <div class="login-brand">Quadrant Technologies LLC<span>Candidate Portal</span></div>
     </div>
     <div class="login-title">Welcome Back</div>
@@ -287,7 +291,7 @@ input[type="checkbox"]{width:15px;height:15px;padding:0;cursor:pointer;accent-co
 <div id="app">
 <header>
   <div class="h-logo">
-    <img id="header-logo" src="data:image/webp;base64,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" alt="Q" style="width:38px;height:38px;object-fit:contain;background:#fff;border-radius:8px;padding:2px;">
+    <img id="header-logo" src="" alt="Q">
     <div class="h-brand">Quadrant Technologies LLC<span>Candidate Portal</span></div>
   </div>
   <nav>
@@ -382,7 +386,7 @@ input[type="checkbox"]{width:15px;height:15px;padding:0;cursor:pointer;accent-co
     </div>
     <div class="card">
       <div class="tbl-wrap"><table>
-        <thead><tr><th>Name</th><th>Client Name</th><th>H1B End Date</th><th>Days Left</th><th>Action</th></tr></thead>
+        <thead><tr><th>Name</th><th>Employer</th><th>H1B End Date</th><th>Days Left</th><th>Action</th></tr></thead>
         <tbody id="h1b-expiry-tbody"></tbody>
       </table></div>
     </div>
@@ -396,7 +400,7 @@ input[type="checkbox"]{width:15px;height:15px;padding:0;cursor:pointer;accent-co
         <button class="btn btn-gold btn-sm" id="email-expiring-btn" onclick="emailExpiring()" style="display:none">✉️ Email All</button>
       </div>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>Name</th><th>Type</th><th>Project</th><th>Client Name</th><th>OPT End</th><th>Days Left</th><th>Action</th></tr></thead>
+        <thead><tr><th>Name</th><th>Type</th><th>Project</th><th>Employer</th><th>OPT End</th><th>Days Left</th><th>Action</th></tr></thead>
         <tbody id="expiring-tbody"></tbody>
       </table></div>
     </div>
@@ -427,7 +431,6 @@ input[type="checkbox"]{width:15px;height:15px;padding:0;cursor:pointer;accent-co
       <div class="fg"><label>Phone <span class="req">*</span></label><input type="tel" id="f-phone" placeholder="e.g. +1 555 000 0000"></div>
       <div class="fg"><label>Personal Email</label><input type="email" id="f-personal-email" placeholder="e.g. priya@gmail.com"></div>
       <div class="fg"><label>Quadrant Email</label><input type="email" id="f-quadrant-email" placeholder="e.g. priya@quadranttech.com"></div>
-      <div class="fg"><label>Quadrant Join Date</label><input type="date" id="f-join-date"></div>
       <div class="fg"><label>Date of Birth</label><input type="date" id="f-dob"></div>
     </div>
 
@@ -458,7 +461,7 @@ input[type="checkbox"]{width:15px;height:15px;padding:0;cursor:pointer;accent-co
           <option value="Not Applicable">Not Applicable</option>
         </select>
       </div>
-      <div class="fg"><label>Client Name</label><input type="text" id="f-employer" placeholder="e.g. Amazon"></div>
+      <div class="fg"><label>Employer</label><input type="text" id="f-employer" placeholder="e.g. Amazon"></div>
       <div class="fg"><label>Job Title</label><input type="text" id="f-jobtitle" placeholder="e.g. Software Engineer"></div>
       <div class="fg"><label>Project</label><input type="text" id="f-project" placeholder="e.g. Cloud Migration"></div>
     </div>
@@ -514,7 +517,7 @@ input[type="checkbox"]{width:15px;height:15px;padding:0;cursor:pointer;accent-co
 
   <!-- Search -->
   <div class="search-row">
-    <input class="s-input" type="text" id="search-input" placeholder="🔍  Search name, client, project, email..." oninput="renderCandidates()">
+    <input class="s-input" type="text" id="search-input" placeholder="🔍  Search name, employer, project, email..." oninput="renderCandidates()">
     <select class="s-input" style="max-width:140px;flex:none;" id="filter-status" onchange="renderCandidates()">
       <option value="">All Statuses</option>
       <option value="Active">Active</option>
@@ -528,7 +531,7 @@ input[type="checkbox"]{width:15px;height:15px;padding:0;cursor:pointer;accent-co
       <thead><tr>
         <th><input type="checkbox" id="sel-all" onchange="toggleSelAll()"></th>
         <th>Name</th><th>Type</th><th>Contact Email</th><th>Phone</th>
-        <th>Project</th><th>Client Name</th><th>OPT End</th><th>Status</th><th>Actions</th>
+        <th>Project</th><th>Employer</th><th>OPT End</th><th>Status</th><th>Actions</th>
       </tr></thead>
       <tbody id="candidates-tbody"></tbody>
     </table></div>
@@ -567,7 +570,7 @@ input[type="checkbox"]{width:15px;height:15px;padding:0;cursor:pointer;accent-co
         </div>
         <div class="fg"><label>Subject *</label><input type="text" id="e-subject" placeholder="e.g. Important Update Regarding Your Status"></div>
         <div class="fg">
-          <label>Message * <span style="font-weight:400;text-transform:none;font-size:10px;">— use {name} {opt_end_date} {client_name} {project} {job_title} to personalize</span></label>
+          <label>Message * <span style="font-weight:400;text-transform:none;font-size:10px;">— use {name} {opt_end_date} {employer} {project} {job_title} to personalize</span></label>
           <textarea id="e-body" style="min-height:160px;" placeholder="Dear {name},&#10;&#10;Write your message here..."></textarea>
         </div>
       </div>
@@ -585,7 +588,7 @@ input[type="checkbox"]{width:15px;height:15px;padding:0;cursor:pointer;accent-co
         <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Send when a new candidate joins</div>
         <div style="background:var(--cream);border-radius:8px;padding:13px;font-size:12px;line-height:1.8;margin-bottom:12px;white-space:pre-wrap;">Subject: Welcome to Quadrant Technologies – Here's What to Know
 
-Dear {name}, Welcome! Your OPT runs from {opt_start_date} to {opt_end_date}. You are assigned to the {project} project as {job_title} at {client_name}. Please review all requirements. Best regards, Quadrant OPT Team</div>
+Dear {name}, Welcome! Your OPT runs from {opt_start_date} to {opt_end_date}. You are assigned to the {project} project as {job_title} at {employer}. Please review all requirements. Best regards, Quadrant OPT Team</div>
         <button class="btn btn-outline btn-sm" onclick="loadTpl('welcome')">Use Template →</button>
       </div>
       <div class="card" style="padding:20px;">
@@ -702,6 +705,23 @@ Dear {name}, We are reaching out with an important update. [Write your announcem
     </div>
 
     <div class="settings-section">
+      <div class="settings-title">🏷️ Custom Fields Manager</div>
+      <div class="settings-sub">Add, edit or remove custom fields that appear on every candidate profile. Changes apply globally.</div>
+      <div id="custom-fields-list" style="margin-bottom:16px;"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <input type="text" id="new-field-name" placeholder="Field name (e.g. LinkedIn URL)" class="s-input" style="max-width:260px;flex:none;">
+        <select id="new-field-type" class="s-input" style="max-width:130px;flex:none;">
+          <option value="text">Text</option>
+          <option value="date">Date</option>
+          <option value="email">Email</option>
+          <option value="url">URL</option>
+          <option value="number">Number</option>
+        </select>
+        <button class="btn btn-purple btn-sm" onclick="addCustomField()">+ Add Field</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
       <div class="settings-title">💾 Data Management</div>
       <div class="settings-sub">Export your data or manage your account</div>
       <div style="display:flex;gap:9px;flex-wrap:wrap;">
@@ -773,7 +793,7 @@ emailjs.init(EJS_PK);
 // ══════════════════════════════════════════════════
 let candidates = [];
 let emailLog   = [];
-
+let customFields = JSON.parse(localStorage.getItem('qt_custom_fields') || '[]');
 let currentProfileId = null;
 let activeProfileTab = 'overview';
 let typeFilter = '';
@@ -782,8 +802,8 @@ let profileNotes = {};
 let profileChecks = {};
 
 // ── Set logos ──────────────────────────────────────
-// logo already embedded in HTML
-// logo already embedded in HTML
+document.getElementById('login-logo-img').src = LOGO_B64;
+document.getElementById('header-logo').src = LOGO_B64;
 
 // ══════════════════════════════════════════════════
 //  AUTH
@@ -834,6 +854,7 @@ async function loadAll() {
   updateDashboard();
   renderCandidates();
   populateSelect();
+  renderCustomFieldSettings();
   updateBirthdayList();
 }
 
@@ -861,8 +882,8 @@ function showPage(name, btn) {
   if (name === 'occasions')  updateBirthdayList();
   if (name === 'events')     showVendorEvents('databricks');
   if (name === 'log')        renderLog();
-  if (name === 'settings')
-  }
+  if (name === 'settings')   renderCustomFieldSettings();
+}
 
 // ══════════════════════════════════════════════════
 //  DASHBOARD
@@ -966,7 +987,7 @@ function cancelForm() {
 function clearForm() {
   ['f-name','f-contact-email','f-phone','f-personal-email','f-quadrant-email','f-dob',
    'f-opt-start','f-opt-end','f-stem-start','f-stem-end','f-project-start','f-project-end',
-   'f-h1-start','f-h1-end','f-employer','f-jobtitle','f-project','f-notes','f-join-date'].forEach(id => {
+   'f-h1-start','f-h1-end','f-employer','f-jobtitle','f-project','f-notes'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   document.getElementById('f-status').value   = 'Active';
@@ -1007,7 +1028,6 @@ async function saveCandidate() {
     project_end:     document.getElementById('f-project-end').value || null,
     h1_start:        document.getElementById('f-h1-start').value || null,
     h1_end:          document.getElementById('f-h1-end').value || null,
-    quadrant_join_date: document.getElementById('f-join-date').value || null,
     employer:        document.getElementById('f-employer').value.trim(),
     job_title:       document.getElementById('f-jobtitle').value.trim(),
     project:         document.getElementById('f-project').value.trim(),
@@ -1062,7 +1082,6 @@ function editCandidate(id) {
   document.getElementById('f-project-end').value    = c.project_end || '';
   document.getElementById('f-h1-start').value       = c.h1_start || '';
   document.getElementById('f-h1-end').value         = c.h1_end || '';
-  document.getElementById('f-join-date').value      = c.quadrant_join_date || '';
   document.getElementById('f-employer').value       = c.employer || '';
   document.getElementById('f-jobtitle').value       = c.job_title || '';
   document.getElementById('f-project').value        = c.project || '';
@@ -1143,8 +1162,8 @@ function bulkEmail() {
 
 function exportCSV() {
   if (!candidates.length) { toast('No candidates to export'); return; }
-  const headers = ['Name','Contact Email','Phone','Type','Status','Quadrant Join Date','OPT Start','OPT End','STEM Start','STEM End','H1B Start','H1B End','Project Start','Project End','Client Name','Job Title','Project','H1 Status','Personal Email','Quadrant Email','DOB','Notes'];
-  const rows = candidates.map(c => [c.name,c.contact_email,c.phone,c.candidate_type,c.status,c.quadrant_join_date,c.opt_start,c.opt_end,c.stem_start,c.stem_end,c.h1_start,c.h1_end,c.project_start,c.project_end,c.employer,c.job_title,c.project,c.h1_status,c.personal_email,c.quadrant_email,c.dob,c.notes].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
+  const headers = ['Name','Contact Email','Phone','Type','Status','OPT Start','OPT End','STEM Start','STEM End','H1B Start','H1B End','Project Start','Project End','Employer','Job Title','Project','H1 Status','Personal Email','Quadrant Email','DOB','Notes'];
+  const rows = candidates.map(c => [c.name,c.contact_email,c.phone,c.candidate_type,c.status,c.opt_start,c.opt_end,c.stem_start,c.stem_end,c.h1_start,c.h1_end,c.project_start,c.project_end,c.employer,c.job_title,c.project,c.h1_status,c.personal_email,c.quadrant_email,c.dob,c.notes].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
   const csv = [headers.join(','), ...rows].join('\n');
   const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
   a.download = `Quadrant_Candidates_${new Date().toISOString().slice(0,10)}.csv`; a.click();
@@ -1168,7 +1187,7 @@ async function openProfile(id) {
 
   document.getElementById('pm-avatar').textContent = c.name.charAt(0).toUpperCase();
   document.getElementById('pm-name').textContent   = c.name;
-  document.getElementById('pm-meta').textContent   = [c.job_title, c.employer].filter(Boolean).join(' · ') || c.contact_email; // employer = client name
+  document.getElementById('pm-meta').textContent   = [c.job_title, c.employer].filter(Boolean).join(' · ') || c.contact_email;
   const tb = c.candidate_type === 'OPT' ? 'badge-opt' : c.candidate_type === 'STEM OPT' ? 'badge-stem' : 'badge-h1b';
   document.getElementById('pm-badges').innerHTML   = `<span class="badge ${tb}">${c.candidate_type}</span> <span class="badge badge-${(c.status||'').toLowerCase()}">${c.status}</span>`;
 
@@ -1187,6 +1206,7 @@ async function openProfile(id) {
 function renderProfileTabs(c) {
   const allTabs = [...PROFILE_TABS];
   // Add custom field tab if any
+  if (customFields.length) allTabs.push({ id:'custom', label:'⚙️ Custom Fields' });
 
   document.getElementById('profile-tabs-bar').innerHTML = allTabs.map(t =>
     `<button class="ptab ${t.id===activeProfileTab?'active':''}" onclick="switchProfileTab('${t.id}')">${t.label}</button>`
@@ -1219,7 +1239,7 @@ function buildTabContent(tab, c) {
       <div><div class="field-lbl">Date of Birth</div><div class="field-val">${fmtDate(c.dob)}</div></div>
     </div>
     <div class="field-row">
-      <div><div class="field-lbl">Client Name</div><div class="field-val">${c.employer||'—'}</div></div>
+      <div><div class="field-lbl">Employer</div><div class="field-val">${c.employer||'—'}</div></div>
       <div><div class="field-lbl">Job Title</div><div class="field-val">${c.job_title||'—'}</div></div>
     </div>
     <div class="field-row">
@@ -1261,7 +1281,7 @@ function buildTabContent(tab, c) {
   }
 
   if (tab.id === 'checklist') {
-    const defaultChecks = ['OPT Documents Verified','Client Verification Done','Welcome Email Sent','I-20 Reviewed','Work Authorization Confirmed'];
+    const defaultChecks = ['OPT Documents Verified','Employer Verification Done','Welcome Email Sent','I-20 Reviewed','Work Authorization Confirmed'];
     const checks = profileChecks[c.id] || defaultChecks.map(l => ({ label:l, done:false }));
     return `
       <div id="cl-${c.id}">
@@ -1274,6 +1294,18 @@ function buildTabContent(tab, c) {
         <input type="text" id="cl-input-${c.id}" placeholder="Add checklist item..." style="flex:1;padding:8px 12px;border:1.5px solid var(--cream2);border-radius:var(--r);font-family:'Inter',sans-serif;font-size:13px;outline:none;">
         <button class="btn btn-purple btn-sm" onclick="addCheck('${c.id}')">+ Add</button>
       </div>`;
+  }
+
+  if (tab.id === 'custom') {
+    const cfData = c.custom_fields || {};
+    return customFields.map(f => `
+      <div class="field-row single" style="margin-bottom:10px;">
+        <div><div class="field-lbl">${f.name}</div>
+        <input type="${f.type}" value="${cfData[f.name]||''}" placeholder="Enter ${f.name}..."
+          style="width:100%;padding:9px 12px;border:1.5px solid var(--cream2);border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;outline:none;"
+          onchange="saveCustomFieldValue('${c.id}','${f.name}',this.value)">
+        </div>
+      </div>`).join('');
   }
   return '';
 }
@@ -1368,7 +1400,7 @@ function personalize(text, c) {
     .replace(/{email}/g, c.contact_email)
     .replace(/{opt_start_date}/g, fmtDate(c.opt_start))
     .replace(/{opt_end_date}/g, fmtDate(c.opt_end))
-    .replace(/{employer}/g, c.employer||'').replace(/{client_name}/g, c.employer||'')
+    .replace(/{employer}/g, c.employer||'')
     .replace(/{job_title}/g, c.job_title||'')
     .replace(/{project}/g, c.project||'');
 }
@@ -1417,7 +1449,7 @@ function switchEmailTab(tab, btn) {
 }
 
 const TPLS = {
-  welcome:      { subject:"Welcome to Quadrant Technologies – Here's What to Know", body:"Dear {name},\n\nWelcome! Your OPT runs from {opt_start_date} to {opt_end_date}.\n\nYou are assigned to the {project} project as {job_title} at {client_name}.\n\nBest regards,\nQuadrant OPT Team" },
+  welcome:      { subject:"Welcome to Quadrant Technologies – Here's What to Know", body:"Dear {name},\n\nWelcome! Your OPT runs from {opt_start_date} to {opt_end_date}.\n\nYou are assigned to the {project} project as {job_title} at {employer}.\n\nBest regards,\nQuadrant OPT Team" },
   expiry:       { subject:"Action Required: Your OPT Expires on {opt_end_date}", body:"Dear {name},\n\nYour OPT authorization expires on {opt_end_date}. Please take immediate steps.\n\nBest regards,\nQuadrant OPT Team" },
   bulk:         { subject:"Important Update for All Candidates", body:"Dear {name},\n\n[Write your announcement here]\n\nBest regards,\nQuadrant OPT Team" },
   birthday:     { subject:"🎂 Happy Birthday, {name}!", body:"Dear {name},\n\nWishing you a wonderful birthday! 🎉 Have a fantastic day!\n\nWarm regards,\nQuadrant OPT Team" },
@@ -1519,11 +1551,35 @@ async function clearLog() {
 // ══════════════════════════════════════════════════
 //  SETTINGS
 // ══════════════════════════════════════════════════
+function renderCustomFieldSettings() {
+  const el = document.getElementById('custom-fields-list'); if (!el) return;
+  if (!customFields.length) { el.innerHTML = '<div style="font-size:13px;color:var(--muted);margin-bottom:12px;">No custom fields yet. Add one below.</div>'; return; }
+  el.innerHTML = customFields.map((f,i) => `
+    <span class="field-pill">
+      <span>${f.name} <span style="color:var(--muted);font-size:10px;">(${f.type})</span></span>
+      <button class="del" onclick="deleteCustomField(${i})">✕</button>
+    </span>`).join('');
+}
 
+function addCustomField() {
+  const name = document.getElementById('new-field-name').value.trim();
+  const type = document.getElementById('new-field-type').value;
+  if (!name) { toast('⚠️ Enter a field name'); return; }
+  if (customFields.find(f => f.name === name)) { toast('⚠️ Field already exists'); return; }
+  customFields.push({ name, type });
+  localStorage.setItem('qt_custom_fields', JSON.stringify(customFields));
+  document.getElementById('new-field-name').value = '';
+  renderCustomFieldSettings();
+  toast(`✓ Field "${name}" added!`);
+}
 
-
-
-
+function deleteCustomField(idx) {
+  if (!confirm(`Remove field "${customFields[idx].name}"?`)) return;
+  customFields.splice(idx, 1);
+  localStorage.setItem('qt_custom_fields', JSON.stringify(customFields));
+  renderCustomFieldSettings();
+  toast('Field removed');
+}
 
 function saveCfg() { toast('✓ Configuration is already embedded in the app!'); }
 
