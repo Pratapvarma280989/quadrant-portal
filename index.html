@@ -792,13 +792,49 @@ async function doLogin() {
   const email = document.getElementById('login-email').value.trim();
   const pass  = document.getElementById('login-password').value;
   const err   = document.getElementById('login-error');
+  const btn   = document.querySelector('.login-btn');
+
+  if (!email || !pass) {
+    err.textContent = 'Please enter your email and password.';
+    err.style.display = 'block';
+    return;
+  }
+
   err.style.display = 'none';
-  const btn = document.querySelector('.login-btn');
   btn.textContent = 'Signing in...';
-  const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
-  btn.textContent = 'Sign In →';
-  if (error) { err.style.display = 'block'; return; }
-  showApp(data.user);
+  btn.disabled = true;
+
+  try {
+    const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
+    btn.textContent = 'Sign In →';
+    btn.disabled = false;
+
+    if (error) {
+      console.error('Login error:', error);
+      if (error.message.includes('Email not confirmed')) {
+        err.textContent = 'Please confirm your email first. Check your inbox for a confirmation link.';
+      } else if (error.message.includes('Invalid login')) {
+        err.textContent = 'Invalid email or password. Please try again.';
+      } else {
+        err.textContent = 'Login failed: ' + error.message;
+      }
+      err.style.display = 'block';
+      return;
+    }
+
+    if (data && data.user) {
+      showApp(data.user);
+    } else {
+      err.textContent = 'Login failed. Please try again.';
+      err.style.display = 'block';
+    }
+  } catch(e) {
+    btn.textContent = 'Sign In →';
+    btn.disabled = false;
+    err.textContent = 'Connection error. Please check your internet and try again.';
+    err.style.display = 'block';
+    console.error('Caught error:', e);
+  }
 }
 
 async function doLogout() {
@@ -812,14 +848,22 @@ async function doLogout() {
 function showApp(user) {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
-  document.getElementById('user-email-display').textContent = user.email;
+  if (user && user.email) {
+    document.getElementById('user-email-display').textContent = user.email;
+  }
   loadAll();
 }
 
 // Check existing session on load
 (async () => {
-  const { data } = await db.auth.getSession();
-  if (data.session) showApp(data.session.user);
+  try {
+    const { data, error } = await db.auth.getSession();
+    if (!error && data && data.session) {
+      showApp(data.session.user);
+    }
+  } catch(e) {
+    console.error('Session check failed:', e);
+  }
 })();
 
 document.addEventListener('keydown', e => {
