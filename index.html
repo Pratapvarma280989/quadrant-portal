@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OPT Candidate Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0f1e38; --navy-light: #1a2f52; --gold: #c9973a; --gold-light: #e8b85a;
+    --cream: #f7f3ee; --cream-dark: #ede7de; --text: #1a1a2e; --text-muted: #6b7280;
+    --white: #ffffff; --green: #2d6a4f; --green-light: #40916c;
+    --red: #ae2012; --red-light: #e63946; --amber: #b5530a; --purple: #6d28d9;
+    --shadow: 0 4px 24px rgba(15,30,56,0.10); --shadow-lg: 0 8px 40px rgba(15,30,56,0.16);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+
+  header {
+    background: var(--navy); color: var(--white); padding: 0 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 70px; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-lg);
+  }
+  .logo { display: flex; align-items: center; gap: 13px; }
+  .logo-icon { width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: white; padding: 2px; }
+  .logo-text { font-family: 'DM Serif Display', serif; font-size: 17px; letter-spacing: 0.2px; }
+  .logo-sub { font-size: 9px; color: rgba(255,255,255,0.45); letter-spacing: 1.5px; text-transform: uppercase; }
+  nav { display: flex; gap: 3px; }
+  .nav-btn { background: transparent; border: none; color: rgba(255,255,255,0.6); padding: 7px 14px; border-radius: 8px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; transition: all 0.2s; white-space: nowrap; }
+  .nav-btn:hover, .nav-btn.active { background: rgba(201,151,58,0.15); color: var(--gold-light); }
+
+  main { max-width: 1300px; margin: 0 auto; padding: 34px 22px; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 13px; margin-bottom: 30px; }
+  .stat-card { background: var(--white); border-radius: 13px; padding: 19px 20px; box-shadow: var(--shadow); border-left: 4px solid var(--navy); transition: transform 0.2s; }
+  .stat-card:hover { transform: translateY(-2px); }
+  .stat-card.green { border-left-color: var(--green-light); }
+  .stat-card.amber { border-left-color: var(--gold); }
+  .stat-card.red   { border-left-color: var(--red-light); }
+  .stat-card.purple{ border-left-color: var(--purple); }
+  .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-muted); margin-bottom: 7px; font-weight: 600; }
+  .stat-value { font-family: 'DM Serif Display', serif; font-size: 30px; color: var(--navy); line-height: 1; }
+
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .section-title { font-family: 'DM Serif Display', serif; font-size: 25px; color: var(--navy); }
+
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 17px; border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+  .btn-primary { background: var(--navy); color: var(--white); }
+  .btn-primary:hover { background: var(--navy-light); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(15,30,56,0.25); }
+  .btn-gold { background: var(--gold); color: var(--navy); }
+  .btn-gold:hover { background: var(--gold-light); transform: translateY(-1px); }
+  .btn-outline { background: transparent; border: 1.5px solid var(--navy); color: var(--navy); }
+  .btn-outline:hover { background: var(--navy); color: var(--white); }
+  .btn-danger { background: transparent; border: 1.5px solid var(--red-light); color: var(--red-light); }
+  .btn-danger:hover { background: var(--red-light); color: white; }
+  .btn-purple { background: var(--purple); color: white; }
+  .btn-purple:hover { background: #5b21b6; }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  .card { background: var(--white); border-radius: 15px; box-shadow: var(--shadow); overflow: hidden; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 22px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); }
+  input, select, textarea { padding: 10px 12px; border: 1.5px solid var(--cream-dark); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); background: var(--cream); transition: all 0.2s; outline: none; }
+  input:focus, select:focus, textarea:focus { border-color: var(--navy); background: var(--white); box-shadow: 0 0 0 3px rgba(15,30,56,0.07); }
+  textarea { resize: vertical; min-height: 75px; }
+  .form-footer { padding: 0 22px 22px; display: flex; gap: 10px; justify-content: flex-end; }
+
+  .table-wrapper { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  thead { background: var(--navy); color: var(--white); }
+  th { padding: 12px 14px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; white-space: nowrap; }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--cream-dark); font-size: 13px; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--cream); }
+
+  .badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+  .badge-active  { background: #d1fae5; color: var(--green); }
+  .badge-expired { background: #fee2e2; color: var(--red); }
+  .badge-pending { background: #fef3c7; color: var(--amber); }
+
+  .actions { display: flex; gap: 5px; }
+  .search-row { display: flex; gap: 9px; margin-bottom: 14px; flex-wrap: wrap; }
+  .search-input { flex: 1; min-width: 180px; padding: 9px 13px; border: 1.5px solid var(--cream-dark); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--white); outline: none; transition: all 0.2s; }
+  .search-input:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(15,30,56,0.07); }
+
+  .tab-row { display: flex; gap: 3px; background: var(--cream-dark); padding: 4px; border-radius: 10px; margin-bottom: 20px; flex-wrap: wrap; width: fit-content; }
+  .tab { padding: 7px 16px; border-radius: 8px; border: none; background: transparent; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--text-muted); transition: all 0.2s; }
+  .tab.active { background: var(--white); color: var(--navy); font-weight: 600; box-shadow: var(--shadow); }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,30,56,0.55); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--white); border-radius: 17px; width: 92%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); animation: slideUp 0.25s ease; }
+  @keyframes slideUp { from { transform: translateY(28px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-header { background: var(--navy); color: var(--white); padding: 19px 24px; border-radius: 17px 17px 0 0; display: flex; align-items: center; justify-content: space-between; }
+  .modal-title { font-family: 'DM Serif Display', serif; font-size: 21px; }
+  .modal-close { background: rgba(255,255,255,0.1); border: none; color: white; width: 30px; height: 30px; border-radius: 8px; cursor: pointer; font-size: 17px; display: flex; align-items: center; justify-content: center; }
+  .modal-close:hover { background: rgba(255,255,255,0.2); }
+  .modal-body { padding: 22px; }
+
+  .recipient-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 9px; border: 1.5px solid var(--cream-dark); border-radius: 8px; min-height: 42px; background: var(--cream); margin-bottom: 4px; }
+  .chip { background: var(--navy); color: white; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--text-muted); }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-title { font-family: 'DM Serif Display', serif; font-size: 19px; color: var(--navy); margin-bottom: 5px; }
+  .empty-sub { font-size: 13px; }
+
+  .toast { position: fixed; bottom: 26px; right: 26px; background: var(--navy); color: white; padding: 12px 18px; border-radius: 11px; font-size: 13px; font-weight: 500; box-shadow: var(--shadow-lg); z-index: 999; transform: translateY(80px); opacity: 0; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); display: flex; align-items: center; gap: 9px; border-left: 4px solid var(--gold); }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  .expiry-soon { color: var(--amber); font-weight: 600; }
+  .expiry-past { color: var(--red-light); font-weight: 600; }
+
+  .log-item { padding: 13px 20px; border-bottom: 1px solid var(--cream-dark); display: flex; gap: 13px; }
+  .log-item:last-child { border-bottom: none; }
+  .log-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--gold); margin-top: 5px; flex-shrink: 0; }
+  .log-subject { font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+  .log-meta { font-size: 11px; color: var(--text-muted); }
+
+  #bulk-bar { margin-top: 13px; padding: 12px 18px; background: var(--navy); border-radius: 11px; display: flex; align-items: center; gap: 13px; color: white; }
+
+  .occasion-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 15px; }
+  .occasion-card { background: var(--white); border-radius: 13px; padding: 20px; box-shadow: var(--shadow); border-top: 4px solid var(--gold); transition: transform 0.2s; }
+  .occasion-card:hover { transform: translateY(-2px); }
+  .occasion-icon { font-size: 30px; margin-bottom: 9px; }
+  .occasion-title { font-weight: 700; font-size: 15px; margin-bottom: 3px; }
+  .occasion-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+
+  .setup-step { display: flex; gap: 13px; padding: 12px 0; border-bottom: 1px solid var(--cream-dark); }
+  .setup-step:last-child { border-bottom: none; }
+  .step-num { width: 26px; height: 26px; background: var(--navy); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .step-content { font-size: 13px; line-height: 1.6; }
+  .step-content a { color: var(--gold); }
+
+  input[type="checkbox"] { width: 15px; height: 15px; padding: 0; cursor: pointer; accent-color: var(--navy); }
+
+  /* CANDIDATE PROFILE MODAL */
+  .profile-modal { max-width: 780px; }
+  .profile-header-band {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+    padding: 28px 28px 0; color: white; border-radius: 17px 17px 0 0;
+  }
+  .profile-avatar {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--gold); display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Serif Display', serif; font-size: 24px; color: var(--navy);
+    flex-shrink: 0; border: 3px solid rgba(255,255,255,0.2);
+  }
+  .profile-name { font-family: 'DM Serif Display', serif; font-size: 22px; margin-bottom: 3px; }
+  .profile-meta { font-size: 12px; color: rgba(255,255,255,0.6); }
+  .profile-tabs {
+    display: flex; gap: 0; margin-top: 20px; overflow-x: auto;
+    border-bottom: none; padding-bottom: 0;
+  }
+  .profile-tab {
+    padding: 10px 18px; border: none; background: transparent;
+    color: rgba(255,255,255,0.55); font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap;
+    border-bottom: 3px solid transparent; transition: all 0.2s;
+  }
+  .profile-tab:hover { color: rgba(255,255,255,0.85); }
+  .profile-tab.active { color: var(--gold-light); border-bottom-color: var(--gold-light); font-weight: 600; }
+  .profile-tab-content { display: none; padding: 24px; }
+  .profile-tab-content.active { display: block; }
+
+  /* TAB MANAGER */
+  .tab-manager {
+    border: 1.5px dashed var(--cream-dark); border-radius: 10px;
+    padding: 16px; background: var(--cream); margin-top: 16px;
+  }
+  .tab-manager-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 12px; }
+  .custom-tab-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .custom-tab-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: white; border-radius: 8px; padding: 9px 12px;
+    border: 1.5px solid var(--cream-dark); font-size: 13px; font-weight: 500;
+  }
+  .custom-tab-item .tab-drag { color: var(--text-muted); margin-right: 10px; cursor: grab; font-size: 14px; }
+  .add-tab-row { display: flex; gap: 8px; }
+  .add-tab-input { flex: 1; padding: 8px 12px; border: 1.5px solid var(--cream-dark); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; }
+  .add-tab-input:focus { border-color: var(--navy); }
+
+  /* FIELDS IN TABS */
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .field-row.single { grid-template-columns: 1fr; }
+  .field-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 4px; }
+  .field-value { font-size: 14px; color: var(--text); padding: 9px 12px; background: var(--cream); border-radius: 8px; border: 1.5px solid var(--cream-dark); min-height: 38px; }
+
+  /* NOTES / ACTIVITY */
+  .note-item { padding: 12px 14px; background: var(--cream); border-radius: 9px; margin-bottom: 10px; border-left: 3px solid var(--gold); }
+  .note-date { font-size: 10px; color: var(--text-muted); margin-bottom: 4px; }
+  .note-text { font-size: 13px; line-height: 1.6; }
+  .note-delete { float: right; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; }
+  .note-delete:hover { color: var(--red-light); }
+
+  /* CHECKLIST */
+  .checklist-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--cream-dark); }
+  .checklist-item:last-child { border-bottom: none; }
+  .checklist-item input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--green-light); }
+  .checklist-label { font-size: 13px; flex: 1; }
+  .checklist-label.done { text-decoration: line-through; color: var(--text-muted); }
+
+  /* CUSTOM TAB CONTENT */
+  .custom-field-editor { display: flex; flex-direction: column; gap: 12px; }
+  .custom-field-row { display: flex; gap: 8px; align-items: flex-start; }
+  .custom-field-key { width: 140px; flex-shrink: 0; }
+  .custom-field-val { flex: 1; }
+  .btn-icon { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-muted); padding: 4px; }
+  .btn-icon:hover { color: var(--red-light); }
+
+  code { background: var(--cream-dark); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+
+  @media (max-width: 860px) {
+    header { padding: 10px 14px; height: auto; flex-direction: column; gap: 8px; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    main { padding: 14px 10px; }
+    nav { flex-wrap: wrap; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon"><img src="data:image/webp;base64,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" style="width:40px;height:40px;object-fit:contain;"></div>
+    <div>
+      <div class="logo-text">Quadrant Technologies LLC</div>
+      <div class="logo-sub">Candidate Portal</div>
+    </div>
+  </div>
+  <nav>
+    <button class="nav-btn active" onclick="showPage('dashboard',this)">📊 Dashboard</button>
+    <button class="nav-btn" onclick="showPage('candidates',this)">👤 Candidates</button>
+    <button class="nav-btn" onclick="showPage('email',this)">✉️ Send Email</button>
+    <button class="nav-btn" onclick="showPage('occasions',this)">🎉 Occasions</button>
+    <button class="nav-btn" onclick="showPage('log',this)">📋 Email Log</button>
+    <button class="nav-btn" onclick="showPage('settings',this)">⚙️ Settings</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ══════════ DASHBOARD ══════════ -->
+<div class="page active" id="page-dashboard">
+  <div class="section-header" style="margin-bottom:24px;">
+    <div>
+      <div class="section-title">Good day! 👋</div>
+      <div style="color:var(--text-muted);font-size:14px;margin-top:3px;">Here's your resources overview</div>
+    </div>
+    <button class="btn btn-primary" onclick="showPage('candidates',document.querySelectorAll('.nav-btn')[1]);setTimeout(openForm,80)">+ Add Candidate</button>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Total Candidates</div><div class="stat-value" id="stat-total">0</div></div>
+    <div class="stat-card green"><div class="stat-label">Active OPT</div><div class="stat-value" id="stat-active">0</div></div>
+    <div class="stat-card amber"><div class="stat-label">Expiring ≤ 60 Days</div><div class="stat-value" id="stat-expiring">0</div></div>
+    <div class="stat-card red"><div class="stat-label">Expired</div><div class="stat-value" id="stat-expired">0</div></div>
+    <div class="stat-card purple"><div class="stat-label">Total Emails Sent</div><div class="stat-value" id="stat-emails">0</div></div>
+  </div>
+  <div class="card">
+    <div style="padding:18px 22px 12px;border-bottom:1px solid var(--cream-dark);display:flex;align-items:center;justify-content:space-between;">
+      <div class="section-title" style="font-size:19px;">⚠️ Expiring Within 60 Days</div>
+      <button class="btn btn-gold btn-sm" id="email-expiring-btn" onclick="emailExpiring()" style="display:none">✉️ Email All Expiring</button>
+    </div>
+    <div class="table-wrapper"><table>
+      <thead><tr><th>Name</th><th>Project</th><th>Employer</th><th>Job Title</th><th>OPT End Date</th><th>Days Left</th><th>Action</th></tr></thead>
+      <tbody id="expiring-tbody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ══════════ CANDIDATES ══════════ -->
+<div class="page" id="page-candidates">
+  <div class="section-header">
+    <div class="section-title">Candidates</div>
+    <div style="display:flex;gap:9px;">
+      <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn btn-primary" onclick="openForm()">+ Add New</button>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <div class="card" id="add-form-card" style="display:none;margin-bottom:18px;">
+    <div style="padding:16px 22px 0;border-bottom:1px solid var(--cream-dark);">
+      <div style="font-family:'DM Serif Display',serif;font-size:19px;padding-bottom:13px;" id="form-title">New Candidate</div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Full Name *</label><input type="text" id="f-name" placeholder="e.g. Priya Sharma"></div>
+      <div class="form-group"><label>Email Address *</label><input type="email" id="f-email" placeholder="e.g. priya@email.com"></div>
+      <div class="form-group"><label>Phone Number</label><input type="tel" id="f-phone" placeholder="e.g. +1 555 000 0000"></div>
+      <div class="form-group"><label>Status</label>
+        <select id="f-status"><option value="Active">Active</option><option value="Pending">Pending</option><option value="Expired">Expired</option></select>
+      </div>
+      <div class="form-group"><label>OPT Start Date</label><input type="date" id="f-start"></div>
+      <div class="form-group"><label>OPT End Date</label><input type="date" id="f-end"></div>
+      <div class="form-group"><label>Employer Name</label><input type="text" id="f-employer" placeholder="e.g. Amazon"></div>
+      <div class="form-group"><label>Job Title</label><input type="text" id="f-jobtitle" placeholder="e.g. Software Engineer"></div>
+      <div class="form-group"><label>Project</label><input type="text" id="f-project" placeholder="e.g. Cloud Migration, Mobile App"></div>
+      <div class="form-group"><label>Date of Birth <span style="font-size:9px;font-weight:400;text-transform:none">(for birthday wishes)</span></label><input type="date" id="f-dob"></div>
+      <div class="form-group"><label>Personal Email</label><input type="email" id="f-personal-email" placeholder="e.g. john@gmail.com"></div>
+      <div class="form-group"><label>Quadrant Email</label><input type="email" id="f-quadrant-email" placeholder="e.g. john@quadranttech.com"></div>
+      <div class="form-group"><label>STEM Start Date</label><input type="date" id="f-stem-start"></div>
+      <div class="form-group"><label>STEM End Date</label><input type="date" id="f-stem-end"></div>
+      <div class="form-group"><label>Project Start Date</label><input type="date" id="f-project-start"></div>
+      <div class="form-group"><label>Project End Date</label><input type="date" id="f-project-end"></div>
+      <div class="form-group"><label>H1 Status</label>
+        <select id="f-h1status">
+          <option value="">— Select —</option>
+          <option value="Not Applied">Not Applied</option>
+          <option value="Applied">Applied</option>
+          <option value="Approved">Approved</option>
+          <option value="Rejected">Rejected</option>
+          <option value="Transferred">Transferred</option>
+          <option value="Not Applicable">Not Applicable</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Notes</label><textarea id="f-notes" placeholder="Any additional notes..."></textarea></div>
+    </div>
+    <div class="form-footer">
+      <button class="btn btn-outline" onclick="cancelForm()">Cancel</button>
+      <button class="btn btn-primary" id="save-btn" onclick="saveCandidate()">✓ Save Candidate</button>
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="search-row">
+    <input class="search-input" type="text" id="search-input" placeholder="🔍  Search name, employer, project..." oninput="renderCandidates()">
+    <select class="search-input" style="max-width:150px;flex:none;" id="filter-status" onchange="renderCandidates()">
+      <option value="">All Statuses</option>
+      <option value="Active">Active</option>
+      <option value="Pending">Pending</option>
+      <option value="Expired">Expired</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <div class="table-wrapper"><table>
+      <thead><tr>
+        <th><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></th>
+        <th>Name</th><th>Email</th><th>Phone</th><th>Project</th>
+        <th>Employer</th><th>Job Title</th><th>OPT End</th><th>Status</th><th>Actions</th>
+      </tr></thead>
+      <tbody id="candidates-tbody"></tbody>
+    </table></div>
+  </div>
+  <div id="bulk-bar" style="display:none;">
+    <span id="bulk-count" style="font-size:13px;font-weight:500;"></span>
+    <button class="btn btn-gold btn-sm" onclick="bulkEmail()">✉️ Email Selected</button>
+  </div>
+</div>
+
+<!-- ══════════ EMAIL ══════════ -->
+<div class="page" id="page-email">
+  <div class="section-title" style="margin-bottom:20px;">Send Email</div>
+  <div class="tab-row" id="email-tabs">
+    <button class="tab active" onclick="switchEmailTab('compose',this)">✉️ Compose</button>
+    <button class="tab" onclick="switchEmailTab('templates',this)">📄 Templates</button>
+  </div>
+
+  <div id="etab-compose">
+    <div class="card">
+      <div class="form-grid" style="grid-template-columns:1fr;">
+        <div class="form-group"><label>From Name / Title</label><input type="text" id="e-from-name" placeholder="e.g. John Smith – OPT Coordinator"></div>
+        <div class="form-group">
+          <label>Recipients</label>
+          <div class="recipient-chips" id="recipient-chips"><span style="color:var(--text-muted);font-size:12px;align-self:center;">Select candidates below ↓</span></div>
+        </div>
+        <div class="form-group">
+          <label>Select Candidates <span style="font-weight:400;text-transform:none;font-size:10px;color:var(--text-muted)">(Hold Cmd/Ctrl for multiple · or use buttons below)</span></label>
+          <select id="e-recipient-select" multiple style="min-height:100px;" onchange="updateRecipientChips()"></select>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-outline btn-sm" onclick="selectAll()">Select All</button>
+          <button class="btn btn-outline btn-sm" onclick="selectActive()">Active Only</button>
+          <button class="btn btn-outline btn-sm" onclick="clearRecipients()">Clear</button>
+        </div>
+        <div class="form-group"><label>Subject *</label><input type="text" id="e-subject" placeholder="e.g. Important Update Regarding Your OPT Status"></div>
+        <div class="form-group">
+          <label>Message * <span style="font-weight:400;text-transform:none;font-size:10px;">— personalize with {name} {opt_end_date} {opt_start_date} {employer} {project} {job_title}</span></label>
+          <textarea id="e-body" style="min-height:170px;" placeholder="Dear {name},&#10;&#10;Write your message here..."></textarea>
+        </div>
+      </div>
+      <div class="form-footer" style="flex-wrap:wrap;">
+        <button class="btn btn-outline" onclick="previewEmail()">👁 Preview</button>
+        <button class="btn btn-primary" onclick="sendEmails()">✉️ Send Email(s)</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="etab-templates" style="display:none;">
+    <div style="display:grid;gap:14px;">
+      <div class="card" style="padding:20px;">
+        <div style="font-size:20px;margin-bottom:5px;">👋</div>
+        <div style="font-weight:700;font-size:14px;margin-bottom:3px;">Welcome Email</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Send when a new candidate is added to your program</div>
+        <div style="background:var(--cream);border-radius:8px;padding:13px;font-size:12px;line-height:1.8;margin-bottom:12px;white-space:pre-wrap;color:var(--text);">Subject: Welcome to the OPT Program – Here's What to Know
+
+Dear {name},
+
+Welcome! We're excited to have you on board.
+
+Your OPT authorization runs from {opt_start_date} to {opt_end_date}. You have been assigned to the {project} project as a {job_title} at {employer}.
+
+Please review all program requirements and feel free to reach out anytime with questions.
+
+Best regards,
+OPT Coordination Team</div>
+        <button class="btn btn-outline btn-sm" onclick="loadTemplate('welcome')">Use This Template →</button>
+      </div>
+
+      <div class="card" style="padding:20px;">
+        <div style="font-size:20px;margin-bottom:5px;">⚠️</div>
+        <div style="font-weight:700;font-size:14px;margin-bottom:3px;">OPT Expiry Reminder</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Send to candidates whose OPT is expiring soon</div>
+        <div style="background:var(--cream);border-radius:8px;padding:13px;font-size:12px;line-height:1.8;margin-bottom:12px;white-space:pre-wrap;color:var(--text);">Subject: Action Required: Your OPT Expires on {opt_end_date}
+
+Dear {name},
+
+This is an important reminder that your OPT authorization expires on {opt_end_date}.
+
+Please take necessary steps to ensure your continued work eligibility. Contact us immediately if you need assistance.
+
+Best regards,
+OPT Coordination Team</div>
+        <button class="btn btn-outline btn-sm" onclick="loadTemplate('expiry')">Use This Template →</button>
+      </div>
+
+      <div class="card" style="padding:20px;">
+        <div style="font-size:20px;margin-bottom:5px;">📢</div>
+        <div style="font-weight:700;font-size:14px;margin-bottom:3px;">Bulk General Announcement</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Send a message to all your candidates at once</div>
+        <div style="background:var(--cream);border-radius:8px;padding:13px;font-size:12px;line-height:1.8;margin-bottom:12px;white-space:pre-wrap;color:var(--text);">Subject: Important Update for All OPT Candidates
+
+Dear {name},
+
+We are reaching out with an important update.
+
+[Write your announcement here]
+
+Please don't hesitate to contact us with any questions.
+
+Best regards,
+OPT Coordination Team</div>
+        <button class="btn btn-outline btn-sm" onclick="loadTemplate('bulk')">Use This Template →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ OCCASIONS ══════════ -->
+<div class="page" id="page-occasions">
+  <div class="section-header" style="margin-bottom:6px;">
+    <div class="section-title">🎉 Occasion Wishes</div>
+  </div>
+  <div style="color:var(--text-muted);font-size:13px;margin-bottom:22px;">Send personalized wish emails to your candidates for special occasions</div>
+  <div class="occasion-grid">
+
+    <div class="occasion-card">
+      <div class="occasion-icon">🎂</div>
+      <div class="occasion-title">Birthday Wishes</div>
+      <div class="occasion-sub">Candidates with birthdays this week will be pre-selected</div>
+      <div id="birthday-list" style="margin-bottom:12px;font-size:12px;"></div>
+      <button class="btn btn-gold btn-sm" onclick="loadOccasion('birthday')">✉️ Send Birthday Wishes</button>
+    </div>
+
+    <div class="occasion-card">
+      <div class="occasion-icon">🎄</div>
+      <div class="occasion-title">Christmas & New Year</div>
+      <div class="occasion-sub">Season's greetings to all your candidates</div>
+      <button class="btn btn-gold btn-sm" onclick="loadOccasion('christmas')">✉️ Send Wishes</button>
+    </div>
+
+    <div class="occasion-card">
+      <div class="occasion-icon">🦃</div>
+      <div class="occasion-title">Thanksgiving</div>
+      <div class="occasion-sub">Warm Thanksgiving greetings</div>
+      <button class="btn btn-gold btn-sm" onclick="loadOccasion('thanksgiving')">✉️ Send Wishes</button>
+    </div>
+
+    <div class="occasion-card">
+      <div class="occasion-icon">🎆</div>
+      <div class="occasion-title">Independence Day</div>
+      <div class="occasion-sub">July 4th celebration wishes</div>
+      <button class="btn btn-gold btn-sm" onclick="loadOccasion('july4')">✉️ Send Wishes</button>
+    </div>
+
+    <div class="occasion-card">
+      <div class="occasion-icon">🌸</div>
+      <div class="occasion-title">Diwali</div>
+      <div class="occasion-sub">Festival of Lights greetings</div>
+      <button class="btn btn-gold btn-sm" onclick="loadOccasion('diwali')">✉️ Send Wishes</button>
+    </div>
+
+    <div class="occasion-card" style="border-top-color:var(--purple);">
+      <div class="occasion-icon">✍️</div>
+      <div class="occasion-title">Custom Occasion</div>
+      <div class="occasion-sub">Write your own occasion message from scratch</div>
+      <button class="btn btn-purple btn-sm" onclick="loadOccasion('custom')">✉️ Write Custom</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════ EMAIL LOG ══════════ -->
+<div class="page" id="page-log">
+  <div class="section-header">
+    <div class="section-title">Email Log</div>
+    <button class="btn btn-danger btn-sm" onclick="clearLog()">Clear All</button>
+  </div>
+  <div class="card" id="log-container"></div>
+</div>
+
+<!-- ══════════ SETTINGS ══════════ -->
+<div class="page" id="page-settings">
+  <div class="section-title" style="margin-bottom:22px;">⚙️ Settings</div>
+  <div style="display:grid;gap:18px;max-width:660px;">
+
+    <div class="card" style="padding:22px;">
+      <div style="font-weight:700;font-size:16px;margin-bottom:5px;">📧 EmailJS Configuration</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:18px;">Connect your free EmailJS account to send real emails directly from this app</div>
+      <div style="background:var(--cream);border-radius:10px;padding:15px;margin-bottom:18px;">
+        <div style="font-weight:600;font-size:12px;margin-bottom:10px;">Step-by-step setup guide:</div>
+        <div class="setup-step"><div class="step-num">1</div><div class="step-content">Go to <a href="https://emailjs.com" target="_blank"><strong>emailjs.com</strong></a> and create a free account</div></div>
+        <div class="setup-step"><div class="step-num">2</div><div class="step-content">Click <strong>Email Services</strong> → Add Service → Choose Gmail → Connect → Copy the <strong>Service ID</strong></div></div>
+        <div class="setup-step"><div class="step-num">3</div><div class="step-content">Click <strong>Email Templates</strong> → Create Template. Add these variables in the body: <code>{{to_name}}</code> <code>{{message}}</code> <code>{{subject}}</code> <code>{{from_name}}</code>. Copy the <strong>Template ID</strong></div></div>
+        <div class="setup-step"><div class="step-num">4</div><div class="step-content">Go to <strong>Account → API Keys</strong> → copy your <strong>Public Key</strong></div></div>
+        <div class="setup-step"><div class="step-num">5</div><div class="step-content">Paste all three values below and click <strong>Save Configuration</strong></div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:13px;">
+        <div class="form-group"><label>Public Key</label><input type="text" id="cfg-pubkey" placeholder="e.g. XXXXXXXXXXXXXXX"></div>
+        <div class="form-group"><label>Service ID</label><input type="text" id="cfg-service" placeholder="e.g. service_xxxxxxx"></div>
+        <div class="form-group"><label>Template ID</label><input type="text" id="cfg-template" placeholder="e.g. template_xxxxxxx"></div>
+      </div>
+      <div style="margin-top:16px;display:flex;gap:9px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="saveConfig()">✓ Save Configuration</button>
+        <button class="btn btn-outline btn-sm" onclick="testEmail()">🧪 Send Test Email</button>
+      </div>
+      <div id="cfg-status" style="margin-top:10px;font-size:13px;"></div>
+    </div>
+
+    <div class="card" style="padding:22px;">
+      <div style="font-weight:700;font-size:16px;margin-bottom:5px;">💾 Data Management</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">All data is saved automatically in your browser's local storage</div>
+      <div style="display:flex;gap:9px;flex-wrap:wrap;">
+        <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export Candidates as CSV</button>
+        <button class="btn btn-danger btn-sm" onclick="clearAll()">🗑 Clear All Data</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</main>
+
+
+<!-- CANDIDATE PROFILE MODAL -->
+<div class="modal-overlay" id="profile-modal">
+  <div class="modal profile-modal">
+
+    <!-- HEADER BAND WITH TABS -->
+    <div class="profile-header-band">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+        <div style="display:flex;gap:14px;align-items:center;">
+          <div class="profile-avatar" id="pm-avatar">P</div>
+          <div>
+            <div class="profile-name" id="pm-name">Candidate Name</div>
+            <div class="profile-meta" id="pm-meta">Job Title · Employer</div>
+            <div style="margin-top:6px;" id="pm-badge"></div>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeModal('profile-modal')" style="margin-top:4px;">✕</button>
+      </div>
+      <div class="profile-tabs" id="profile-tabs-bar">
+        <!-- tabs injected by JS -->
+      </div>
+    </div>
+
+    <!-- TAB CONTENTS -->
+    <div id="profile-tab-contents">
+      <!-- injected by JS -->
+    </div>
+
+    <!-- FOOTER -->
+    <div style="padding:0 24px 20px;display:flex;gap:9px;justify-content:flex-end;border-top:1px solid var(--cream-dark);padding-top:16px;">
+      <button class="btn btn-gold btn-sm" onclick="emailFromProfile()">✉️ Send Email</button>
+      <button class="btn btn-outline btn-sm" onclick="editFromProfile()">✏️ Edit Info</button>
+      <button class="btn btn-primary btn-sm" onclick="saveProfileData()">✓ Save Changes</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div class="modal-overlay" id="preview-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Email Preview</div>
+      <button class="modal-close" onclick="closeModal('preview-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="preview-body" style="line-height:1.9;white-space:pre-wrap;font-size:13px;"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toast-msg"></span></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script>
+
+// ── DATA ──────────────────────────────────────────────
+let candidates = JSON.parse(localStorage.getItem('opt_candidates') || '[]');
+let emailLog   = JSON.parse(localStorage.getItem('opt_email_log')   || '[]');
+let emailCfg   = JSON.parse(localStorage.getItem('opt_email_cfg')   || '{}');
+let editingId  = null;
+
+const save    = () => localStorage.setItem('opt_candidates', JSON.stringify(candidates));
+const saveLog = () => localStorage.setItem('opt_email_log',  JSON.stringify(emailLog));
+const saveCfg = () => localStorage.setItem('opt_email_cfg',  JSON.stringify(emailCfg));
+
+if (emailCfg.pubkey) {
+  document.getElementById('cfg-pubkey').value   = emailCfg.pubkey;
+  document.getElementById('cfg-service').value  = emailCfg.service;
+  document.getElementById('cfg-template').value = emailCfg.template;
+  emailjs.init(emailCfg.pubkey);
+}
+
+// ── NAVIGATION ─────────────────────────────────────
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  const actions = { dashboard: updateDashboard, candidates: renderCandidates, email: populateSelect, occasions: updateBirthdayList, log: renderLog };
+  if (actions[name]) actions[name]();
+}
+
+// ── DASHBOARD ──────────────────────────────────────
+function updateDashboard() {
+  document.getElementById('stat-total').textContent    = candidates.length;
+  document.getElementById('stat-active').textContent   = candidates.filter(c => c.status==='Active').length;
+  document.getElementById('stat-expired').textContent  = candidates.filter(c => c.status==='Expired').length;
+  document.getElementById('stat-expiring').textContent = candidates.filter(c => daysLeft(c.optEnd) >= 0 && daysLeft(c.optEnd) <= 60).length;
+  document.getElementById('stat-emails').textContent   = emailLog.reduce((a,l) => a + (l.count||0), 0);
+
+  const exp = candidates.filter(c => daysLeft(c.optEnd) >= 0 && daysLeft(c.optEnd) <= 60);
+  document.getElementById('email-expiring-btn').style.display = exp.length ? '' : 'none';
+
+  const tbody = document.getElementById('expiring-tbody');
+  if (!exp.length) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state" style="padding:24px;"><div class="empty-sub">🎉 No candidates expiring in the next 60 days</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = exp.sort((a,b) => daysLeft(a.optEnd)-daysLeft(b.optEnd)).map(c => `
+    <tr>
+      <td><strong>${c.name}</strong></td>
+      <td>${c.project||'—'}</td>
+      <td>${c.employer||'—'}</td>
+      <td>${c.jobTitle||'—'}</td>
+      <td>${fmtDate(c.optEnd)}</td>
+      <td><span class="expiry-soon">${daysLeft(c.optEnd)} days</span></td>
+      <td><div class="actions"><button class="btn btn-outline btn-sm" onclick="openProfile('${c.id}')">👁 View</button><button class="btn btn-gold btn-sm" onclick="quickEmail('${c.id}')">✉️ Email</button></div></td>
+    </tr>`).join('');
+}
+
+function emailExpiring() {
+  const ids = new Set(candidates.filter(c => daysLeft(c.optEnd)>=0 && daysLeft(c.optEnd)<=60).map(c=>c.id));
+  showPage('email', document.querySelectorAll('.nav-btn')[2]);
+  setTimeout(() => { setRecipients(ids); loadTemplate('expiry'); }, 80);
+}
+
+// ── CANDIDATES ─────────────────────────────────────
+function openForm() {
+  editingId = null;
+  clearForm();
+  document.getElementById('form-title').textContent = 'New Candidate';
+  document.getElementById('save-btn').textContent = '✓ Save Candidate';
+  document.getElementById('add-form-card').style.display = '';
+  document.getElementById('add-form-card').scrollIntoView({ behavior:'smooth' });
+}
+
+function cancelForm() {
+  editingId = null;
+  clearForm();
+  document.getElementById('add-form-card').style.display = 'none';
+}
+
+function clearForm() {
+  ['f-name','f-email','f-phone','f-start','f-end','f-employer','f-jobtitle','f-project','f-dob','f-personal-email','f-quadrant-email','f-stem-start','f-stem-end','f-project-start','f-project-end','f-notes'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('f-h1status').value = '';
+  document.getElementById('f-status').value = 'Active';
+}
+
+function saveCandidate() {
+  const name  = document.getElementById('f-name').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  if (!name || !email) { toast('⚠️ Name and Email are required'); return; }
+  const data = {
+    name, email,
+    phone:         document.getElementById('f-phone').value.trim(),
+    status:        document.getElementById('f-status').value,
+    optStart:      document.getElementById('f-start').value,
+    optEnd:        document.getElementById('f-end').value,
+    employer:      document.getElementById('f-employer').value.trim(),
+    jobTitle:      document.getElementById('f-jobtitle').value.trim(),
+    project:       document.getElementById('f-project').value.trim(),
+    dob:           document.getElementById('f-dob').value,
+    personalEmail: document.getElementById('f-personal-email').value.trim(),
+    quadrantEmail: document.getElementById('f-quadrant-email').value.trim(),
+    stemStart:     document.getElementById('f-stem-start').value,
+    stemEnd:       document.getElementById('f-stem-end').value,
+    projectStart:  document.getElementById('f-project-start').value,
+    projectEnd:    document.getElementById('f-project-end').value,
+    h1Status:      document.getElementById('f-h1status').value,
+    notes:         document.getElementById('f-notes').value.trim(),
+  };
+  if (editingId) {
+    const i = candidates.findIndex(c => c.id===editingId);
+    candidates[i] = {...candidates[i], ...data};
+    toast('✓ Candidate updated!');
+  } else {
+    candidates.push({id: Date.now().toString(), addedOn: new Date().toISOString(), ...data});
+    toast('✓ Candidate added!');
+  }
+  save(); cancelForm(); renderCandidates();
+}
+
+function editCandidate(id) {
+  const c = candidates.find(x => x.id===id); if (!c) return;
+  editingId = id;
+  document.getElementById('f-name').value           = c.name;
+  document.getElementById('f-email').value          = c.email;
+  document.getElementById('f-phone').value          = c.phone||'';
+  document.getElementById('f-status').value         = c.status;
+  document.getElementById('f-start').value          = c.optStart||'';
+  document.getElementById('f-end').value            = c.optEnd||'';
+  document.getElementById('f-employer').value       = c.employer||'';
+  document.getElementById('f-jobtitle').value       = c.jobTitle||'';
+  document.getElementById('f-project').value        = c.project||'';
+  document.getElementById('f-dob').value            = c.dob||'';
+  document.getElementById('f-personal-email').value = c.personalEmail||'';
+  document.getElementById('f-quadrant-email').value = c.quadrantEmail||'';
+  document.getElementById('f-stem-start').value     = c.stemStart||'';
+  document.getElementById('f-stem-end').value       = c.stemEnd||'';
+  document.getElementById('f-project-start').value  = c.projectStart||'';
+  document.getElementById('f-project-end').value    = c.projectEnd||'';
+  document.getElementById('f-h1status').value       = c.h1Status||'';
+  document.getElementById('f-notes').value          = c.notes||'';
+  document.getElementById('form-title').textContent = 'Edit Candidate';
+  document.getElementById('save-btn').textContent = '✓ Update Candidate';
+  document.getElementById('add-form-card').style.display = '';
+  document.getElementById('add-form-card').scrollIntoView({behavior:'smooth'});
+}
+
+function deleteCandidate(id) {
+  if (!confirm('Delete this candidate? This cannot be undone.')) return;
+  candidates = candidates.filter(c => c.id!==id);
+  save(); renderCandidates(); toast('Candidate removed');
+}
+
+function renderCandidates() {
+  const q  = (document.getElementById('search-input').value||'').toLowerCase();
+  const sf = document.getElementById('filter-status').value;
+  const list = candidates.filter(c => {
+    const m = !q || [c.name,c.employer,c.project,c.jobTitle,c.email].some(f => (f||'').toLowerCase().includes(q));
+    return m && (!sf || c.status===sf);
+  });
+  const tbody = document.getElementById('candidates-tbody');
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">👤</div><div class="empty-title">No candidates found</div><div class="empty-sub">Add your first candidate using the button above</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(c => {
+    const d = daysLeft(c.optEnd);
+    const dc = c.optEnd ? (d<0 ? `<span class="expiry-past">${fmtDate(c.optEnd)}</span>` : d<=60 ? `<span class="expiry-soon">${fmtDate(c.optEnd)}<br><small>${d}d</small></span>` : fmtDate(c.optEnd)) : '—';
+    return `<tr>
+      <td><input type="checkbox" class="row-check" value="${c.id}" onchange="updateBulk()"></td>
+      <td><strong>${c.name}</strong></td>
+      <td><a href="mailto:${c.email}" style="color:var(--navy)">${c.email}</a></td>
+      <td>${c.phone||'—'}</td>
+      <td>${c.project||'—'}</td>
+      <td>${c.employer||'—'}</td>
+      <td>${c.jobTitle||'—'}</td>
+      <td>${dc}</td>
+      <td><span class="badge badge-${c.status.toLowerCase()}">${c.status}</span></td>
+      <td><div class="actions">
+        <button class="btn btn-outline btn-sm" onclick="openProfile('${c.id}')">👁 View</button>
+        <button class="btn btn-gold btn-sm" onclick="quickEmail('${c.id}')">✉️</button>
+        <button class="btn btn-outline btn-sm" onclick="editCandidate('${c.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCandidate('${c.id}')">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleSelectAll() {
+  const all = document.getElementById('select-all').checked;
+  document.querySelectorAll('.row-check').forEach(cb => cb.checked=all);
+  updateBulk();
+}
+
+function updateBulk() {
+  const checked = [...document.querySelectorAll('.row-check:checked')].map(cb=>cb.value);
+  const bar = document.getElementById('bulk-bar');
+  if (checked.length) { bar.style.display='flex'; document.getElementById('bulk-count').textContent=`${checked.length} selected`; }
+  else bar.style.display='none';
+}
+
+function bulkEmail() {
+  const ids = new Set([...document.querySelectorAll('.row-check:checked')].map(cb=>cb.value));
+  showPage('email', document.querySelectorAll('.nav-btn')[2]);
+  setTimeout(() => setRecipients(ids), 70);
+}
+
+// ── EMAIL ──────────────────────────────────────────
+function populateSelect() {
+  const sel = document.getElementById('e-recipient-select');
+  sel.innerHTML = candidates.map(c => `<option value="${c.id}">${c.name} — ${c.email}</option>`).join('');
+}
+
+function updateRecipientChips() {
+  const sel = document.getElementById('e-recipient-select');
+  const picked = [...sel.selectedOptions];
+  const chips = document.getElementById('recipient-chips');
+  chips.innerHTML = picked.length
+    ? picked.map(o=>`<span class="chip">${o.text.split('—')[0].trim()}</span>`).join('')
+    : '<span style="color:var(--text-muted);font-size:12px;align-self:center;">Select candidates above ↑</span>';
+}
+
+function setRecipients(ids) {
+  const sel = document.getElementById('e-recipient-select');
+  [...sel.options].forEach(o => o.selected=ids.has(o.value));
+  updateRecipientChips();
+}
+
+function selectAll() {
+  [...document.getElementById('e-recipient-select').options].forEach(o=>o.selected=true);
+  updateRecipientChips();
+}
+
+function selectActive() {
+  const ids = new Set(candidates.filter(c=>c.status==='Active').map(c=>c.id));
+  setRecipients(ids);
+}
+
+function clearRecipients() {
+  [...document.getElementById('e-recipient-select').options].forEach(o=>o.selected=false);
+  updateRecipientChips();
+}
+
+function getRecipients() {
+  return [...document.getElementById('e-recipient-select').selectedOptions]
+    .map(o => candidates.find(c=>c.id===o.value)).filter(Boolean);
+}
+
+function personalize(text, c) {
+  return text
+    .replace(/{name}/g, c.name)
+    .replace(/{email}/g, c.email)
+    .replace(/{opt_start_date}/g, fmtDate(c.optStart))
+    .replace(/{opt_end_date}/g, fmtDate(c.optEnd))
+    .replace(/{employer}/g, c.employer||'')
+    .replace(/{job_title}/g, c.jobTitle||'')
+    .replace(/{project}/g, c.project||'');
+}
+
+async function sendEmails() {
+  if (!emailCfg.pubkey) { toast('⚠️ Configure EmailJS in Settings first'); showPage('settings',document.querySelectorAll('.nav-btn')[5]); return; }
+  const recipients = getRecipients();
+  if (!recipients.length) { toast('⚠️ Please select at least one recipient'); return; }
+  const subject  = document.getElementById('e-subject').value.trim();
+  const body     = document.getElementById('e-body').value.trim();
+  const fromName = document.getElementById('e-from-name').value.trim() || 'OPT Coordinator';
+  if (!subject || !body) { toast('⚠️ Subject and message are required'); return; }
+
+  toast('📨 Sending emails...');
+  let sent = 0;
+  for (const c of recipients) {
+    try {
+      await emailjs.send(emailCfg.service, emailCfg.template, {
+        to_name: c.name, to_email: c.email, from_name: fromName,
+        subject: personalize(subject, c), message: personalize(body, c)
+      });
+      sent++;
+    } catch(e) { console.error('Failed:', c.email, e); }
+  }
+  emailLog.unshift({ id: Date.now(), subject, recipients: recipients.map(c=>c.name), count: sent, sentAt: new Date().toISOString() });
+  saveLog();
+  toast(`✓ Sent to ${sent} of ${recipients.length} recipient(s)!`);
+}
+
+function previewEmail() {
+  const r = getRecipients();
+  const sample = r[0] || candidates[0] || { name:'[Name]', email:'[email]', optStart:'', optEnd:'', employer:'', project:'', jobTitle:'' };
+  document.getElementById('preview-body').textContent =
+    `TO: ${sample.email}\nSUBJECT: ${personalize(document.getElementById('e-subject').value, sample)}\n\n${personalize(document.getElementById('e-body').value, sample)}`;
+  document.getElementById('preview-modal').classList.add('open');
+}
+
+function quickEmail(id) {
+  showPage('email', document.querySelectorAll('.nav-btn')[2]);
+  setTimeout(() => { setRecipients(new Set([id])); }, 70);
+}
+
+function switchEmailTab(tab, btn) {
+  document.getElementById('etab-compose').style.display   = tab==='compose'   ? '' : 'none';
+  document.getElementById('etab-templates').style.display = tab==='templates' ? '' : 'none';
+  document.querySelectorAll('#email-tabs .tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+const TEMPLATES = {
+  welcome:      { subject: "Welcome to the OPT Program – Here's What to Know", body: "Dear {name},\n\nWelcome! We're excited to have you on board.\n\nYour OPT authorization runs from {opt_start_date} to {opt_end_date}. You have been assigned to the {project} project as a {job_title} at {employer}.\n\nPlease review all program requirements and feel free to reach out anytime.\n\nBest regards,\nOPT Coordination Team" },
+  expiry:       { subject: "Action Required: Your OPT Expires on {opt_end_date}", body: "Dear {name},\n\nThis is an important reminder that your OPT work authorization expires on {opt_end_date}.\n\nPlease take the necessary steps immediately to ensure your continued work eligibility. Contact us if you need assistance.\n\nBest regards,\nOPT Coordination Team" },
+  bulk:         { subject: "Important Update for All OPT Candidates", body: "Dear {name},\n\nWe are reaching out with an important update.\n\n[Write your announcement here]\n\nDon't hesitate to contact us with any questions.\n\nBest regards,\nOPT Coordination Team" },
+  birthday:     { subject: "🎂 Happy Birthday, {name}!", body: "Dear {name},\n\nWishing you a wonderful birthday! 🎉\n\nMay this special day bring you joy and everything you wish for. It's a pleasure having you in our OPT program, and we hope your year ahead is filled with success.\n\nHappy Birthday!\n\nWarm regards,\nOPT Coordination Team" },
+  christmas:    { subject: "🎄 Season's Greetings from the OPT Team!", body: "Dear {name},\n\nWishing you and your loved ones a joyful holiday season and a wonderful New Year! 🎄✨\n\nThank you for your dedication throughout this year. We look forward to supporting you in the year ahead.\n\nHappy Holidays!\n\nWarm regards,\nOPT Coordination Team" },
+  thanksgiving: { subject: "🦃 Happy Thanksgiving, {name}!", body: "Dear {name},\n\nAs we celebrate Thanksgiving, we want to express our gratitude for having you in our OPT program. 🦃\n\nWe're truly thankful for your hard work and dedication. Wishing you a warm holiday filled with great food, family, and friends!\n\nHappy Thanksgiving!\n\nWarm regards,\nOPT Coordination Team" },
+  july4:        { subject: "🎆 Happy Independence Day, {name}!", body: "Dear {name},\n\nHappy 4th of July! 🎆🇺🇸\n\nWishing you a wonderful Independence Day celebration filled with joy and great memories.\n\nEnjoy the holiday!\n\nWarm regards,\nOPT Coordination Team" },
+  diwali:       { subject: "🌸 Happy Diwali, {name}!", body: "Dear {name},\n\nWishing you and your family a very Happy Diwali! 🪔✨\n\nMay this Festival of Lights bring happiness, prosperity, and warmth to your home. May the glow of the diyas illuminate your path to success!\n\nShubh Deepawali!\n\nWarm regards,\nOPT Coordination Team" },
+  custom:       { subject: "", body: "Dear {name},\n\n[Write your custom message here]\n\nWarm regards,\nOPT Coordination Team" },
+};
+
+function loadTemplate(type) {
+  const t = TEMPLATES[type]; if (!t) return;
+  document.getElementById('e-subject').value = t.subject;
+  document.getElementById('e-body').value    = t.body;
+  switchEmailTab('compose', document.querySelector('#email-tabs .tab'));
+}
+
+function loadOccasion(type) {
+  showPage('email', document.querySelectorAll('.nav-btn')[2]);
+  setTimeout(() => {
+    loadTemplate(type);
+    if (type === 'birthday') {
+      const today = new Date();
+      const ids = new Set(candidates.filter(c => {
+        if (!c.dob) return false;
+        const d = new Date(c.dob);
+        return d.getMonth()===today.getMonth() && Math.abs(d.getDate()-today.getDate())<=3;
+      }).map(c=>c.id));
+      if (ids.size) setRecipients(ids);
+    }
+  }, 80);
+}
+
+// ── OCCASIONS ─────────────────────────────────────
+function updateBirthdayList() {
+  const today = new Date();
+  const bdays = candidates.filter(c => {
+    if (!c.dob) return false;
+    const d = new Date(c.dob);
+    return d.getMonth()===today.getMonth() && Math.abs(d.getDate()-today.getDate())<=3;
+  });
+  const el = document.getElementById('birthday-list');
+  el.innerHTML = bdays.length
+    ? bdays.map(c=>`<div style="padding:3px 0;border-bottom:1px solid var(--cream-dark);font-size:12px;">🎂 <strong>${c.name}</strong></div>`).join('')
+    : '<div style="font-size:12px;color:var(--text-muted);">No birthdays in the next 3 days</div>';
+}
+
+// ── LOG ───────────────────────────────────────────
+function renderLog() {
+  const el = document.getElementById('log-container');
+  if (!emailLog.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">No emails sent yet</div><div class="empty-sub">Sent emails will appear here</div></div>`;
+    return;
+  }
+  el.innerHTML = emailLog.map(l=>`
+    <div class="log-item">
+      <div class="log-dot"></div>
+      <div>
+        <div class="log-subject">${l.subject}</div>
+        <div class="log-meta">Sent to <strong>${l.count}</strong>: ${l.recipients.slice(0,5).join(', ')}${l.recipients.length>5?` +${l.recipients.length-5} more`:''} · ${new Date(l.sentAt).toLocaleString()}</div>
+      </div>
+    </div>`).join('');
+}
+
+function clearLog() {
+  if (!confirm('Clear all email history?')) return;
+  emailLog=[]; saveLog(); renderLog();
+}
+
+// ── SETTINGS ──────────────────────────────────────
+function saveConfig() {
+  const pk = document.getElementById('cfg-pubkey').value.trim();
+  const sv = document.getElementById('cfg-service').value.trim();
+  const tp = document.getElementById('cfg-template').value.trim();
+  if (!pk||!sv||!tp) { toast('⚠️ Please fill all three fields'); return; }
+  emailCfg = {pubkey:pk, service:sv, template:tp};
+  saveCfg(); emailjs.init(pk);
+  document.getElementById('cfg-status').innerHTML = '<span style="color:var(--green)">✓ Saved successfully!</span>';
+  toast('✓ Configuration saved!');
+}
+
+async function testEmail() {
+  if (!emailCfg.pubkey) { toast('⚠️ Save configuration first'); return; }
+  const addr = prompt('Enter your email address for the test:');
+  if (!addr) return;
+  toast('📨 Sending test...');
+  try {
+    await emailjs.send(emailCfg.service, emailCfg.template, {
+      to_name:'Test User', to_email:addr, from_name:'OPT Manager',
+      subject:'✓ Test – OPT Manager is connected!',
+      message:'This is a test email. Your EmailJS setup is working correctly!'
+    });
+    toast('✓ Test email sent! Check your inbox.');
+  } catch(e) { toast('⚠️ Failed. Check your credentials.'); console.error(e); }
+}
+
+function exportCSV() {
+  if (!candidates.length) { toast('No candidates to export'); return; }
+  const headers = ['Name','Email','Phone','Status','OPT Start','OPT End','STEM Start','STEM End','Project Start','Project End','Employer','Job Title','Project','H1 Status','Personal Email','Quadrant Email','DOB','Notes'];
+  const rows = candidates.map(c => [c.name,c.email,c.phone,c.status,c.optStart,c.optEnd,c.stemStart,c.stemEnd,c.projectStart,c.projectEnd,c.employer,c.jobTitle,c.project,c.h1Status,c.personalEmail,c.quadrantEmail,c.dob,c.notes].map(v=>`"${(v||'').replace(/"/g,'""')}"`).join(','));
+  const csv = [headers.join(','),...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = `OPT_Candidates_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); toast('✓ CSV exported!');
+}
+
+function clearAll() {
+  if (!confirm('Delete ALL candidates and email history permanently?')) return;
+  candidates=[]; emailLog=[]; save(); saveLog();
+  toast('All data cleared'); updateDashboard();
+}
+
+// ── HELPERS ───────────────────────────────────────
+const daysLeft = ds => ds ? Math.floor((new Date(ds+'T12:00:00') - new Date()) / 86400000) : 9999;
+const fmtDate  = ds => ds ? new Date(ds+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+const closeModal = id => document.getElementById(id).classList.remove('open');
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 3400);
+}
+
+
+// ══════════════════════════════════════════════════════
+//  CANDIDATE PROFILE MODAL
+// ══════════════════════════════════════════════════════
+
+// Default tabs (always present)
+const DEFAULT_TABS = [
+  { id: 'overview',    label: '📋 Overview',     type: 'overview' },
+  { id: 'activity',   label: '📝 Activity Log',  type: 'activity' },
+  { id: 'checklist',  label: '✅ Checklist',     type: 'checklist' },
+  { id: 'manage',     label: '⚙️ Manage Tabs',   type: 'manage' },
+];
+
+let currentProfileId = null;
+let profileTabs = JSON.parse(localStorage.getItem('opt_profile_tabs') || 'null') || [...DEFAULT_TABS];
+let activeProfileTab = 'overview';
+
+function saveProfileTabs() {
+  localStorage.setItem('opt_profile_tabs', JSON.stringify(profileTabs));
+}
+
+function openProfile(id) {
+  const c = candidates.find(x => x.id === id);
+  if (!c) return;
+  currentProfileId = id;
+  activeProfileTab = 'overview';
+
+  // Header
+  document.getElementById('pm-avatar').textContent = c.name.charAt(0).toUpperCase();
+  document.getElementById('pm-name').textContent = c.name;
+  document.getElementById('pm-meta').textContent = [c.jobTitle, c.employer].filter(Boolean).join(' · ') || c.email;
+  document.getElementById('pm-badge').innerHTML = `<span class="badge badge-${c.status.toLowerCase()}">${c.status}</span>`;
+
+  renderProfileTabs(c);
+  document.getElementById('profile-modal').classList.add('open');
+}
+
+function renderProfileTabs(c) {
+  if (!c) c = candidates.find(x => x.id === currentProfileId);
+  const bar = document.getElementById('profile-tabs-bar');
+  bar.innerHTML = profileTabs.map(t =>
+    `<button class="profile-tab ${t.id === activeProfileTab ? 'active' : ''}"
+      onclick="switchProfileTab('${t.id}')">${t.label}</button>`
+  ).join('');
+
+  const container = document.getElementById('profile-tab-contents');
+  container.innerHTML = profileTabs.map(t => `
+    <div class="profile-tab-content ${t.id === activeProfileTab ? 'active' : ''}" id="ptab-${t.id}">
+      ${buildTabContent(t, c)}
+    </div>`).join('');
+}
+
+function switchProfileTab(tabId) {
+  activeProfileTab = tabId;
+  document.querySelectorAll('.profile-tab').forEach(b => b.classList.toggle('active', b.textContent === profileTabs.find(t=>t.id===tabId)?.label));
+  document.querySelectorAll('.profile-tab-content').forEach(d => d.classList.toggle('active', d.id === 'ptab-' + tabId));
+}
+
+function buildTabContent(tab, c) {
+  const profileData = JSON.parse(localStorage.getItem('opt_profile_data_' + c.id) || '{}');
+
+  if (tab.type === 'overview') {
+    return `
+      <div class="field-row">
+        <div><div class="field-label">Full Name</div><div class="field-value">${c.name||'—'}</div></div>
+        <div><div class="field-label">Email</div><div class="field-value">${c.email||'—'}</div></div>
+      </div>
+      <div class="field-row">
+        <div><div class="field-label">Phone</div><div class="field-value">${c.phone||'—'}</div></div>
+        <div><div class="field-label">Status</div><div class="field-value"><span class="badge badge-${(c.status||'').toLowerCase()}">${c.status||'—'}</span></div></div>
+      </div>
+      <div class="field-row">
+        <div><div class="field-label">OPT Start Date</div><div class="field-value">${fmtDate(c.optStart)}</div></div>
+        <div><div class="field-label">OPT End Date</div><div class="field-value">${fmtDate(c.optEnd)}${c.optEnd && daysLeft(c.optEnd)>=0 && daysLeft(c.optEnd)<=60 ? ' <span class=\'expiry-soon\'>(' + daysLeft(c.optEnd) + 'd left)</span>' : ''}</div></div>
+      </div>
+      <div class="field-row">
+        <div><div class="field-label">Employer</div><div class="field-value">${c.employer||'—'}</div></div>
+        <div><div class="field-label">Job Title</div><div class="field-value">${c.jobTitle||'—'}</div></div>
+      </div>
+      <div class="field-row">
+        <div><div class="field-label">Project</div><div class="field-value">${c.project||'—'}</div></div>
+        <div><div class="field-label">Date of Birth</div><div class="field-value">${fmtDate(c.dob)}</div></div>
+      </div>
+      <div class="field-row single">
+        <div><div class="field-label">Notes</div><div class="field-value" style="min-height:60px;">${c.notes||'—'}</div></div>
+      </div>`;
+  }
+
+  if (tab.type === 'activity') {
+    const notes = profileData.notes || [];
+    return `
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <input type="text" id="note-input-${c.id}" placeholder="Add a note or activity..." style="flex:1;padding:9px 12px;border:1.5px solid var(--cream-dark);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;">
+        <button class="btn btn-primary btn-sm" onclick="addNote('${c.id}')">+ Add</button>
+      </div>
+      <div id="notes-list-${c.id}">
+        ${notes.length ? notes.map((n,i) => `
+          <div class="note-item">
+            <button class="note-delete" onclick="deleteNote('${c.id}',${i})">✕</button>
+            <div class="note-date">${new Date(n.date).toLocaleString()}</div>
+            <div class="note-text">${n.text}</div>
+          </div>`).join('') : '<div style="color:var(--text-muted);font-size:13px;">No activity yet. Add your first note above.</div>'}
+      </div>`;
+  }
+
+  if (tab.type === 'checklist') {
+    const checks = profileData.checklist || [
+      { label: 'OPT Documents Verified', done: false },
+      { label: 'Employer Verification Completed', done: false },
+      { label: 'Welcome Email Sent', done: false },
+      { label: 'I-20 Reviewed', done: false },
+      { label: 'Work Authorization Confirmed', done: false },
+    ];
+    return `
+      <div id="checklist-${c.id}">
+        ${checks.map((ch,i) => `
+          <div class="checklist-item">
+            <input type="checkbox" ${ch.done?'checked':''} onchange="toggleCheck('${c.id}',${i},this.checked)">
+            <span class="checklist-label ${ch.done?'done':''}" id="clabel-${c.id}-${i}">${ch.label}</span>
+            <button class="btn-icon" onclick="deleteCheck('${c.id}',${i})">✕</button>
+          </div>`).join('')}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <input type="text" id="check-input-${c.id}" placeholder="Add new checklist item..." style="flex:1;padding:8px 12px;border:1.5px solid var(--cream-dark);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;">
+        <button class="btn btn-primary btn-sm" onclick="addCheck('${c.id}')">+ Add</button>
+      </div>`;
+  }
+
+  if (tab.type === 'manage') {
+    return `
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6;">
+        Add custom tabs to store any extra information for this candidate — documents, salary, background check, client details, anything you need.
+      </div>
+      <div class="tab-manager">
+        <div class="tab-manager-title">Your Custom Tabs</div>
+        <div class="custom-tab-list" id="custom-tab-list">
+          ${profileTabs.filter(t=>t.type==='custom').map(t=>`
+            <div class="custom-tab-item" data-id="${t.id}">
+              <span style="font-size:14px;margin-right:8px;">☰</span>
+              <span style="flex:1;">${t.label}</span>
+              <button class="btn-icon" onclick="removeCustomTab('${t.id}')">✕</button>
+            </div>`).join('') || '<div style="font-size:12px;color:var(--text-muted);">No custom tabs yet</div>'}
+        </div>
+        <div class="add-tab-row">
+          <input type="text" class="add-tab-input" id="new-tab-input" placeholder="e.g. 📄 Documents, 💰 Salary, 🔍 Background Check">
+          <button class="btn btn-primary btn-sm" onclick="addCustomTab()">+ Add Tab</button>
+        </div>
+      </div>
+      <div style="margin-top:16px;font-size:12px;color:var(--text-muted);">
+        💡 <strong>Tip:</strong> Use emoji at the start for a visual icon, e.g. "📄 Documents" or "💰 Salary Info"
+      </div>`;
+  }
+
+  if (tab.type === 'custom') {
+    const fields = (profileData.customTabs || {})[tab.id] || [];
+    return `
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Add any fields you need for <strong>${tab.label}</strong></div>
+      <div class="custom-field-editor" id="cfe-${tab.id}-${c.id}">
+        ${fields.map((f,i) => `
+          <div class="custom-field-row">
+            <input class="add-tab-input custom-field-key" style="width:140px;flex:none;" value="${f.key}" placeholder="Field name" oninput="updateCustomField('${c.id}','${tab.id}',${i},'key',this.value)">
+            <input class="add-tab-input custom-field-val" value="${f.val}" placeholder="Value" oninput="updateCustomField('${c.id}','${tab.id}',${i},'val',this.value)">
+            <button class="btn-icon" onclick="deleteCustomField('${c.id}','${tab.id}',${i})">✕</button>
+          </div>`).join('')}
+      </div>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px;" onclick="addCustomField('${c.id}','${tab.id}')">+ Add Field</button>`;
+  }
+
+  return '<div style="padding:20px;color:var(--text-muted);">Nothing here yet.</div>';
+}
+
+// ── NOTE ACTIONS ──────────────────────────────────
+function getProfileData(id) {
+  return JSON.parse(localStorage.getItem('opt_profile_data_' + id) || '{}');
+}
+function setProfileData(id, data) {
+  localStorage.setItem('opt_profile_data_' + id, JSON.stringify(data));
+}
+
+function addNote(id) {
+  const input = document.getElementById('note-input-' + id);
+  const text = input.value.trim();
+  if (!text) return;
+  const data = getProfileData(id);
+  if (!data.notes) data.notes = [];
+  data.notes.unshift({ text, date: new Date().toISOString() });
+  setProfileData(id, data);
+  input.value = '';
+  const c = candidates.find(x => x.id === id);
+  const tab = profileTabs.find(t => t.type === 'activity');
+  document.getElementById('notes-list-' + id).innerHTML = data.notes.map((n,i)=>`
+    <div class="note-item">
+      <button class="note-delete" onclick="deleteNote('${id}',${i})">✕</button>
+      <div class="note-date">${new Date(n.date).toLocaleString()}</div>
+      <div class="note-text">${n.text}</div>
+    </div>`).join('');
+  toast('✓ Note added!');
+}
+
+function deleteNote(id, idx) {
+  const data = getProfileData(id);
+  data.notes.splice(idx, 1);
+  setProfileData(id, data);
+  const c = candidates.find(x => x.id === id);
+  openProfile(id); switchProfileTab('activity');
+}
+
+// ── CHECKLIST ACTIONS ─────────────────────────────
+function toggleCheck(id, idx, val) {
+  const data = getProfileData(id);
+  if (!data.checklist) data.checklist = getDefaultChecklist();
+  data.checklist[idx].done = val;
+  setProfileData(id, data);
+  const lbl = document.getElementById('clabel-' + id + '-' + idx);
+  if (lbl) lbl.className = 'checklist-label' + (val ? ' done' : '');
+}
+
+function deleteCheck(id, idx) {
+  const data = getProfileData(id);
+  if (!data.checklist) data.checklist = getDefaultChecklist();
+  data.checklist.splice(idx, 1);
+  setProfileData(id, data);
+  openProfile(id); switchProfileTab('checklist');
+}
+
+function addCheck(id) {
+  const input = document.getElementById('check-input-' + id);
+  const label = input.value.trim();
+  if (!label) return;
+  const data = getProfileData(id);
+  if (!data.checklist) data.checklist = getDefaultChecklist();
+  data.checklist.push({ label, done: false });
+  setProfileData(id, data);
+  input.value = '';
+  openProfile(id); switchProfileTab('checklist');
+}
+
+function getDefaultChecklist() {
+  return [
+    { label: 'OPT Documents Verified', done: false },
+    { label: 'Employer Verification Completed', done: false },
+    { label: 'Welcome Email Sent', done: false },
+    { label: 'I-20 Reviewed', done: false },
+    { label: 'Work Authorization Confirmed', done: false },
+  ];
+}
+
+// ── CUSTOM TAB MANAGEMENT ─────────────────────────
+function addCustomTab() {
+  const input = document.getElementById('new-tab-input');
+  const label = input.value.trim();
+  if (!label) { toast('⚠️ Please enter a tab name'); return; }
+  const id = 'custom_' + Date.now();
+  // Insert before the manage tab
+  const manageIdx = profileTabs.findIndex(t => t.type === 'manage');
+  profileTabs.splice(manageIdx, 0, { id, label, type: 'custom' });
+  saveProfileTabs();
+  input.value = '';
+  const c = candidates.find(x => x.id === currentProfileId);
+  renderProfileTabs(c);
+  switchProfileTab(id);
+  toast('✓ Tab "' + label + '" added!');
+}
+
+function removeCustomTab(tabId) {
+  if (!confirm('Remove this tab? Data in it will be lost.')) return;
+  profileTabs = profileTabs.filter(t => t.id !== tabId);
+  saveProfileTabs();
+  const c = candidates.find(x => x.id === currentProfileId);
+  renderProfileTabs(c);
+  switchProfileTab('overview');
+  toast('Tab removed');
+}
+
+// ── CUSTOM FIELDS ─────────────────────────────────
+function addCustomField(cid, tabId) {
+  const data = getProfileData(cid);
+  if (!data.customTabs) data.customTabs = {};
+  if (!data.customTabs[tabId]) data.customTabs[tabId] = [];
+  data.customTabs[tabId].push({ key: '', val: '' });
+  setProfileData(cid, data);
+  openProfile(cid); switchProfileTab(tabId);
+}
+
+function updateCustomField(cid, tabId, idx, prop, val) {
+  const data = getProfileData(cid);
+  if (!data.customTabs) data.customTabs = {};
+  if (!data.customTabs[tabId]) data.customTabs[tabId] = [];
+  data.customTabs[tabId][idx][prop] = val;
+  setProfileData(cid, data);
+}
+
+function deleteCustomField(cid, tabId, idx) {
+  const data = getProfileData(cid);
+  data.customTabs[tabId].splice(idx, 1);
+  setProfileData(cid, data);
+  openProfile(cid); switchProfileTab(tabId);
+}
+
+// ── PROFILE SAVE / ACTIONS ────────────────────────
+function saveProfileData() {
+  toast('✓ All changes saved!');
+  closeModal('profile-modal');
+}
+
+function emailFromProfile() {
+  const c = candidates.find(x => x.id === currentProfileId);
+  closeModal('profile-modal');
+  showPage('email', document.querySelectorAll('.nav-btn')[2]);
+  setTimeout(() => { setRecipients(new Set([c.id])); }, 70);
+}
+
+function editFromProfile() {
+  closeModal('profile-modal');
+  showPage('candidates', document.querySelectorAll('.nav-btn')[1]);
+  setTimeout(() => editCandidate(currentProfileId), 80);
+}
+
+// ── INIT ──────────────────────────────────────────
+updateDashboard();
+renderCandidates();
+
+</script>
+</body>
+</html>
